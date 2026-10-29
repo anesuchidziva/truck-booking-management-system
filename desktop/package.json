@@ -1,0 +1,68 @@
+{
+  "name": "amcotts-workshop-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "author": "Amcotts Workshop Control",
+  "description": "Amcotts Workshop Control desktop application",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win nsis",
+    "generate-icon": "powershell -ExecutionPolicy Bypass -File .\\generate-icon.ps1"
+  },
+  "devDependencies": {
+    "electron": "latest",
+    "electron-builder": "latest"
+  },
+  "build": {
+    "appId": "zw.co.amcotts.workshopcontrol",
+    "productName": "Amcotts Workshop Control",
+    "artifactName": "Amcotts-Workshop-Control-Setup-${version}.${ext}",
+    "directories": {
+      "output": "release",
+      "buildResources": "assets"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "startup.html",
+      "assets/icon.svg",
+      "assets/icon.ico",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../frontend/dist",
+        "to": "frontend"
+      },
+      {
+        "from": "resources/backend",
+        "to": "backend"
+      },
+      {
+        "from": "resources/diagnosis-service",
+        "to": "diagnosis-service"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Amcotts Workshop Control",
+      "uninstallDisplayName": "Amcotts Workshop Control",
+      "runAfterFinish": true
+    }
+  }
+}

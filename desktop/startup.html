@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="color-scheme" content="dark" />
+    <title>Amcotts Workshop Control</title>
+    <style>
+      :root { color-scheme: dark; font-family: "Segoe UI", system-ui, sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #061a31; color: #f6f8fb; overflow: hidden; }
+      body::before { content: ""; position: fixed; inset: -30%; background: radial-gradient(circle at 50% 30%, rgba(255, 179, 0, .16), transparent 32%), radial-gradient(circle at 10% 90%, rgba(17, 65, 108, .7), transparent 35%); pointer-events: none; }
+      main { width: min(560px, calc(100vw - 48px)); text-align: center; position: relative; padding: 54px 48px 48px; border: 1px solid rgba(255,255,255,.12); border-radius: 28px; background: linear-gradient(145deg, rgba(20,52,83,.95), rgba(5,22,42,.96)); box-shadow: 0 32px 90px rgba(0,0,0,.36); }
+      .mark { width: 86px; height: 86px; margin: 0 auto 28px; display: grid; place-items: center; border-radius: 24px; background: #ffb300; box-shadow: 0 12px 30px rgba(255,179,0,.28); }
+      .mark svg { width: 54px; height: 54px; }
+      h1 { margin: 0; font-size: 27px; letter-spacing: .01em; }
+      p { margin: 10px 0 30px; color: #a8b8cb; font-size: 15px; }
+      .status { display: inline-flex; align-items: center; gap: 10px; color: #dce7f2; font-size: 14px; }
+      .dot { width: 9px; height: 9px; border-radius: 50%; background: #ffb300; box-shadow: 0 0 0 6px rgba(255,179,0,.12); animation: pulse 1.35s ease-in-out infinite; }
+      .bar { height: 4px; margin-top: 28px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.11); }
+      .bar::after { content: ""; display: block; width: 38%; height: 100%; border-radius: inherit; background: #ffb300; animation: loading 1.5s ease-in-out infinite; }
+      .error { display: none; margin-top: 24px; padding: 14px 16px; border: 1px solid rgba(255, 133, 133, .34); border-radius: 12px; background: rgba(120, 26, 42, .34); color: #ffd9df; font-size: 13px; line-height: 1.55; text-align: left; }
+      .error strong { display: block; margin-bottom: 4px; color: #fff; }
+      body.failed .dot { background: #ff7485; box-shadow: 0 0 0 6px rgba(255,116,133,.12); animation: none; }
+      body.failed .bar::after { width: 100%; background: #ff7485; animation: none; }
+      @keyframes loading { 0% { transform: translateX(-120%); } 100% { transform: translateX(310%); } }
+      @keyframes pulse { 50% { opacity: .42; transform: scale(.82); } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M39.8 9.5a14.7 14.7 0 0 0-2.3 16.3L18.2 45.1a6.6 6.6 0 1 0 9.3 9.3l19.3-19.3A14.7 14.7 0 0 0 53 12.2l-8.3 8.3-5.4-1.8-1.8-5.4 8.3-8.3a14.7 14.7 0 0 0-6 4.5Z" stroke="#061a31" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="m20.2 43.8 5 5" stroke="#061a31" stroke-width="4.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h1>Amcotts Workshop Control</h1>
+      <p>Preparing your secure workshop workspace</p>
+      <div class="status"><span class="dot"></span><span id="status">Starting workshop services…</span></div>
+      <div class="bar" aria-hidden="true"></div>
+      <div class="error" id="error"><strong>Startup needs attention</strong><span id="error-detail"></span></div>
+    </main>
+    <script>
+      window.showStartupError = (message, detail) => {
+        document.body.classList.add('failed');
+        document.getElementById('status').textContent = message;
+        document.getElementById('error-detail').textContent = detail;
+        document.getElementById('error').style.display = 'block';
+      };
+    </script>
+  </body>
+</html>

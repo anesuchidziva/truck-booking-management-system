@@ -40,6 +40,16 @@ promo-output/
 tmp-final-*.jpg
 tools/media-deps/
 
+# Desktop installer staging and release output
+desktop/node_modules/
+desktop/resources/
+desktop/pyinstaller-build/
+desktop/pyinstaller-spec/
+desktop/release/
+desktop/release-*/
+desktop/assets/icon.ico
+desktop/*.log
+
 # IDE and OS files
 .vs/
 .vscode/
