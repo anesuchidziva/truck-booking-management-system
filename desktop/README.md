@@ -26,6 +26,8 @@ The build creates a self-contained .NET backend and a PyInstaller diagnostic sid
 
 The installer does not bundle SQL Server. The client computer or workshop server must provide the configured SQL Server instance. The default connection targets `localhost\SQLEXPRESS` and `AmcottsWorkshop`.
 
+On an empty database, the desktop package creates two clearly labelled historical demo records: one completed and one cancelled. It never overwrites an existing booking database. The client can then begin a new booking from the **New Booking** screen.
+
 Optional connection overrides are stored per Windows user at:
 
 ```text

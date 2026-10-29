@@ -69,7 +69,8 @@ function startBackend(settings, frontendPort) {
     ASPNETCORE_ENVIRONMENT: 'Production',
     FrontendOrigin: `http://localhost:${frontendPort}`,
     ConnectionStrings__DefaultConnection: settings.sqlConnection || DEFAULT_CONNECTION,
-    DiagnosticService__BaseUrl: `http://127.0.0.1:${DIAGNOSTIC_PORT}`
+    DiagnosticService__BaseUrl: `http://127.0.0.1:${DIAGNOSTIC_PORT}`,
+    DemoData__Enabled: 'true'
   };
   if (app.isPackaged) {
     return startProcess('backend', published, ['--urls', `http://localhost:${API_PORT}`], { cwd: path.dirname(published), env });
@@ -154,6 +155,7 @@ function createWindow() {
 async function launch() {
   const settings = readSettings();
   const window = createWindow();
+  window.maximize();
   await window.loadFile(path.join(__dirname, 'startup.html'));
   window.show();
   try {

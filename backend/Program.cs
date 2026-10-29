@@ -78,6 +78,12 @@ await using (var authSeedScope = app.Services.CreateAsyncScope())
         if (!await users.IsInRoleAsync(user, seed.Role)) await users.AddToRoleAsync(user, seed.Role);
     }
 }
+if (builder.Configuration.GetValue<bool>("DemoData:Enabled"))
+{
+    await using var demoScope = app.Services.CreateAsyncScope();
+    var demoDb = demoScope.ServiceProvider.GetRequiredService<WorkshopDbContext>();
+    if (!await demoDb.Bookings.AnyAsync()) await DemoDataSeeder.SeedAsync(demoDb);
+}
 app.UseExceptionHandler();
 app.UseCors();
 app.UseAuthentication();
@@ -731,3 +737,65 @@ public sealed class DiagnosticSuggestion { public int Id { get; set; } public in
 public sealed class RepairRecord { public int Id { get; set; } public int BookingId { get; set; } public Booking Booking { get; set; } = null!; public int? MechanicId { get; set; } public string? ConfirmedPrimaryFault { get; set; } public string Findings { get; set; } = ""; public string WorkPerformed { get; set; } = ""; public string? PartsUsed { get; set; } public string? Notes { get; set; } public DateTime RepairStartedUtc { get; set; } public DateTime? RepairCompletedUtc { get; set; } }
 public sealed class InspectionRecord { public int Id { get; set; } public int BookingId { get; set; } public Booking Booking { get; set; } = null!; public string ChecklistJson { get; set; } = "[]"; public string? Findings { get; set; } public string? Severity { get; set; } public int? EstimatedRepairMinutes { get; set; } public DateTime UpdatedUtc { get; set; } }
 public sealed class SystemSetting { public string SettingKey { get; set; } = ""; public string SettingValue { get; set; } = ""; public DateTime UpdatedUtc { get; set; } }
+
+public static class DemoDataSeeder
+{
+    public static async Task SeedAsync(WorkshopDbContext db)
+    {
+        var now = DateTime.UtcNow;
+        var completedCustomer = new Customer { Name = "Demo Haulage Fleet", ContactDetails = "Demo record" };
+        var cancelledCustomer = new Customer { Name = "Demo Logistics", ContactDetails = "Demo record" };
+        var completedTruck = new Truck { Customer = completedCustomer, RegistrationNumber = "DEMO 001", NormalizedRegistration = "DEMO001", Make = "Scania", Model = "R500", Vin = "DEMO-VIN-001" };
+        var cancelledTruck = new Truck { Customer = cancelledCustomer, RegistrationNumber = "DEMO 002", NormalizedRegistration = "DEMO002", Make = "Volvo", Model = "FH16", Vin = "DEMO-VIN-002" };
+        db.Customers.AddRange(completedCustomer, cancelledCustomer);
+        db.Trucks.AddRange(completedTruck, cancelledTruck);
+        await db.SaveChangesAsync();
+
+        var completed = new Booking
+        {
+            CustomerId = completedCustomer.Id,
+            TruckId = completedTruck.Id,
+            ServiceDate = DateOnly.FromDateTime(now.AddDays(-14)),
+            QueueNumber = 1,
+            RequestKey = "client-demo-completed-001",
+            ArrivalUtc = now.AddDays(-14),
+            CreatedUtc = now.AddDays(-14),
+            Complaint = "Routine brake and safety inspection",
+            Priority = "MEDIUM",
+            Status = "Completed",
+            ConfirmedFaultCategory = "Brake system pressure fault",
+            Symptoms = [new BookingSymptom { Name = "Brake Squeal" }, new BookingSymptom { Name = "ABS Light" }]
+        };
+        var cancelled = new Booking
+        {
+            CustomerId = cancelledCustomer.Id,
+            TruckId = cancelledTruck.Id,
+            ServiceDate = DateOnly.FromDateTime(now.AddDays(-7)),
+            QueueNumber = 1,
+            RequestKey = "client-demo-cancelled-001",
+            ArrivalUtc = now.AddDays(-7),
+            CreatedUtc = now.AddDays(-7),
+            Complaint = "Electrical fault diagnosis requested",
+            Priority = "LOW",
+            Status = "Cancelled",
+            Symptoms = [new BookingSymptom { Name = "Electrical Fault" }]
+        };
+        db.Bookings.AddRange(completed, cancelled);
+        await db.SaveChangesAsync();
+
+        db.StatusEvents.AddRange(
+            new StatusEvent { BookingId = completed.Id, NewStatus = "Waiting", Reason = "Demo booking created", OccurredUtc = now.AddDays(-14) },
+            new StatusEvent { BookingId = completed.Id, PreviousStatus = "Waiting", NewStatus = "UnderInspection", Reason = "Inspection completed", OccurredUtc = now.AddDays(-14).AddHours(1) },
+            new StatusEvent { BookingId = completed.Id, PreviousStatus = "UnderInspection", NewStatus = "ReadyForAllocation", Reason = "Inspection approved for allocation", OccurredUtc = now.AddDays(-14).AddHours(2) },
+            new StatusEvent { BookingId = completed.Id, PreviousStatus = "ReadyForAllocation", NewStatus = "Assigned", Reason = "Assigned to Marcus Chen", OccurredUtc = now.AddDays(-14).AddHours(3) },
+            new StatusEvent { BookingId = completed.Id, PreviousStatus = "Assigned", NewStatus = "InRepair", Reason = "Repair started", OccurredUtc = now.AddDays(-14).AddHours(4) },
+            new StatusEvent { BookingId = completed.Id, PreviousStatus = "InRepair", NewStatus = "Completed", Reason = "Demo repair completed", OccurredUtc = now.AddDays(-13) },
+            new StatusEvent { BookingId = cancelled.Id, NewStatus = "Waiting", Reason = "Demo booking created", OccurredUtc = now.AddDays(-7) },
+            new StatusEvent { BookingId = cancelled.Id, PreviousStatus = "Waiting", NewStatus = "Cancelled", Reason = "Customer cancelled before workshop entry", OccurredUtc = now.AddDays(-6) }
+        );
+        db.Assignments.Add(new Assignment { BookingId = completed.Id, MechanicId = 1, CreatedUtc = now.AddDays(-14).AddHours(3), ClosedUtc = now.AddDays(-13), Reason = "Demo completed assignment" });
+        db.InspectionRecords.Add(new InspectionRecord { BookingId = completed.Id, ChecklistJson = JsonSerializer.Serialize(new[] { "Braking System", "Fluid Levels & Leaks" }), Findings = "Brake pressure was below the expected range.", Severity = "Medium", EstimatedRepairMinutes = 120, UpdatedUtc = now.AddDays(-14).AddHours(2) });
+        db.RepairRecords.Add(new RepairRecord { BookingId = completed.Id, MechanicId = 1, ConfirmedPrimaryFault = "Brake system pressure fault", Findings = "Demo inspection confirmed reduced brake pressure.", WorkPerformed = "Adjusted the brake system and completed safety testing.", PartsUsed = "Seals and hydraulic fluid", Notes = "Demo history record.", RepairStartedUtc = now.AddDays(-14).AddHours(4), RepairCompletedUtc = now.AddDays(-13) });
+        await db.SaveChangesAsync();
+    }
+}
