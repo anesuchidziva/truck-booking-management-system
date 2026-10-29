@@ -1,0 +1,51 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Dependencies
+**/node_modules/
+**/.venv/
+**/venv/
+
+# Frontend build and caches
+frontend/dist/
+frontend/tsconfig.tsbuildinfo
+**/.vite/
+
+# .NET build output
+**/bin/
+**/obj/
+**/build-verify/
+
+# Python caches and test output
+**/__pycache__/
+**/.pytest_cache/
+**/.coverage
+**/htmlcov/
+
+# Local runtime and temporary data
+runtime-logs/
+tmp-*/
+**/*.log
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated promotional media and local exports
+promo-output/
+tmp-final-*.jpg
+tools/media-deps/
+
+# IDE and OS files
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.DS_Store
+Thumbs.db
