@@ -41,3 +41,14 @@ Example:
 ```
 
 Application logs are stored at `%APPDATA%\Amcotts Workshop Control\logs`. The installer is currently unsigned; a trusted code-signing certificate should be added before client distribution to reduce Windows SmartScreen warnings.
+
+## Installation procedure
+
+1. Confirm SQL Server Express is installed and the `AmcottsWorkshop` database is reachable.
+2. Run `Amcotts-Workshop-Control-Setup-1.0.0.exe`.
+3. Choose the installation folder and allow the installer to create the desktop and Start Menu shortcuts.
+4. Launch **Amcotts Workshop Control** from the shortcut.
+5. Wait for the branded startup screen to confirm that the API and diagnostic service are ready.
+6. Sign in through the existing role-based login screen.
+
+If the SQL Server instance is on another computer, create `%APPDATA%\Amcotts Workshop Control\settings.json` with the connection string shown above before launching the application.

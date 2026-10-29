@@ -27,7 +27,7 @@
       "main.cjs",
       "preload.cjs",
       "startup.html",
-      "assets/icon.svg",
+      "assets/amcotts-logo.png",
       "assets/icon.ico",
       "package.json"
     ],
